@@ -1,0 +1,31 @@
+- name: kubernetes installation
+  hosts: masters,workers
+  remote_user: root
+  become: yes
+  become_method: sudo
+  become_user: root
+  
+  vars_files:
+   vars/vars.yml
+
+  tasks:
+   - name: add Kubernetes' YUM repository
+     yum_repository:
+      name: Kubernetes
+      description: Kubernetes YUM repository
+      baseurl: "{{ base_url }}"
+      gpgkey: "{{ gpg_key }}"
+      gpgcheck: yes
+
+   - name: Install kubelet kubeadm kubectl
+     shell: |
+       sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+   - name: Start and enable
+     service: 
+       name: kubelet
+       state: started 
+       enabled: yes
+   - name: reboot
+     reboot:
+       reboot_timeout: 2600
+

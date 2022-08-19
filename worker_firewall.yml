@@ -1,0 +1,33 @@
+---
+- name: system configuration for WORKERS
+  hosts: masters
+  remote_user: root
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+    #firewalld
+    - name: firewalld rules
+      firewalld:
+        permanent: yes
+        immediate: yes
+        port: "{{item.port}}/{{item.proto}}"
+        zone: public
+        state: enabled
+      with_items:
+        - { port: "10250", proto: "tcp" }
+        - { port: "30000-32767", proto: "tcp" }
+    - name: reload
+      service:
+        name: firewalld
+        state: reloaded
+    #>>copyfile
+    - name: ">>"
+      shell: |
+        firewall-cmd --list-all --zone=public >> /tmp/rules.txt
+    #restart firewalld
+    - name: reload
+      service:
+        name: firewalld
+        state: restarted
