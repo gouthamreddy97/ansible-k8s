@@ -1,0 +1,16 @@
+---
+- name: System Configuration
+  import_playbook: system_config.yml
+
+- name: Master Node Firewall Rules
+  import_playbook: master_firewall.yml
+
+- name: Worker Nodes Firewall Rules
+  import_playbook: worker_firewall.yml
+
+- name: Install Docker
+  import_playbook: docker.yml
+
+- name: Install Kubernetes
+  import_playbook: install_k8s.yml
+ 

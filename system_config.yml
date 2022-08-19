@@ -1,0 +1,47 @@
+---
+- name: system configuration for MASTERS
+  hosts: all
+  remote_user: root
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+    #needed packages
+    - name: Install packages
+      yum:
+        name: "{{ items }}"
+      vars:
+        items:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+        state: latest
+
+    #SElinux
+    - name: selinux permissive mode
+      selinux:
+        policy: targeted
+        state: permissive
+
+    #ip tables
+    - name: ip tables
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: "1"
+        sysctl_set: yes
+        state: present
+        reload: yes
+    - name: ip tables
+      shell: |
+        cat <<EOF >  /etc/sysctl.d/k8s.conf
+        net.bridge.bridge-nf-call-ip6tables = 1
+        net.bridge.bridge-nf-call-iptables = 1
+        EOF
+        sysctl --system
+
+    #swapoff
+    - name: swapoff
+      shell: |
+        swapoff -a
+
